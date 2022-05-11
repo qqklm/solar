@@ -20,7 +20,7 @@ public class ReturnBean<T> {
      * {@link org.springframework.http.HttpStatus}
      * {@link BusinessStatus}
      */
-    private Integer code = HttpStatus.OK.value();
+    private String code = String.valueOf(HttpStatus.OK.value());
     /**
      * 额外信息，默认为空
      */

@@ -146,9 +146,9 @@ public class I18nComponent {
      * @param locale 语种
      * @return 国际化后字符串
      */
-    public String i18n(Integer code, Object[] args, Locale locale) {
+    public String i18n(String code, Object[] args, Locale locale) {
         try {
-            return messageSource.getMessage(String.valueOf(code), args, locale);
+            return messageSource.getMessage(code, args, locale);
         } catch (Exception e) {
             return messageSource.getMessage(NOT_FOUND, new Object[]{code}, locale);
         }
