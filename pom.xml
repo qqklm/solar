@@ -22,6 +22,11 @@
     </properties>
 
 
+    <modules>
+        <module>common</module>
+        <module>tools</module>
+    </modules>
+
     <dependencyManagement>
         <dependencies>
             <!-- cloud boot对应版本 https://spring.io/projects/spring-cloud#overview -->
