@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 添加该注解的类不需要统一返回值、添加该注解的方法不需要统一返回值
+ * 添加该注解的类不需要统一返回值
  *
  * @author wb
  * @date 2022/04/1 09:49

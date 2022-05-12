@@ -1,7 +1,7 @@
 package io.github.qqklm.common.config;
 
 import io.github.qqklm.common.BusinessException;
-import io.github.qqklm.common.BusinessStatus;
+import io.github.qqklm.common.BusinessCode;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +28,7 @@ public class ReDirectedErrorConfig implements ErrorController {
     public void handleError(HttpServletRequest request) {
         // NOT_FOUND异常
         if (Integer.valueOf(HttpStatus.NOT_FOUND.value()).equals(request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE))) {
-            throw new BusinessException(BusinessStatus.HTTP_NOT_FOUND, new Object[]{request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI)});
+            throw new BusinessException(BusinessCode.HTTP_NOT_FOUND.getCode(), new Object[]{request.getAttribute(RequestDispatcher.ERROR_REQUEST_URI)});
         }
     }
 }

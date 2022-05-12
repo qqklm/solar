@@ -9,7 +9,7 @@ import lombok.Getter;
  * @date 2022/3/25 16:39
  */
 @Getter
-public enum BusinessStatus {
+public enum BusinessCode {
     /**
      * 序列化失败
      */
@@ -60,7 +60,7 @@ public enum BusinessStatus {
      */
     private final String code;
 
-    BusinessStatus(String code) {
+    BusinessCode(String code) {
         this.code = code;
     }
 }

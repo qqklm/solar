@@ -18,7 +18,7 @@ public class ReturnBean<T> {
     /**
      * 状态码
      * {@link org.springframework.http.HttpStatus}
-     * {@link BusinessStatus}
+     * {@link BusinessCode}
      */
     private String code = String.valueOf(HttpStatus.OK.value());
     /**

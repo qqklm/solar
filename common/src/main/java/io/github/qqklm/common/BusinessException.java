@@ -13,7 +13,7 @@ public final class BusinessException extends RuntimeException {
     /**
      * 自定义业务异常代码
      */
-    private BusinessStatus status;
+    private String code;
     /**
      * 异常信息中的格式化参数
      */
@@ -22,20 +22,20 @@ public final class BusinessException extends RuntimeException {
     /**
      * 构建业务异常
      *
-     * @param status 业务异常
+     * @param code 业务异常
      */
-    public BusinessException(BusinessStatus status) {
-        this.status = status;
+    public BusinessException(String code) {
+        this.code = code;
         this.messageArgs = new Object[]{};
     }
 
     /**
      * 构建业务异常
      *
-     * @param status 业务异常
+     * @param code 业务异常
      */
-    public BusinessException(BusinessStatus status, Object[] messageArgs) {
-        this.status = status;
+    public BusinessException(String code, Object[] messageArgs) {
+        this.code = code;
         this.messageArgs = messageArgs;
     }
 //

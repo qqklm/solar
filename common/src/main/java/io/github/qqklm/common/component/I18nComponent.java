@@ -3,7 +3,7 @@ package io.github.qqklm.common.component;
 import cn.hutool.core.collection.IterUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import io.github.qqklm.common.BusinessException;
-import io.github.qqklm.common.BusinessStatus;
+import io.github.qqklm.common.BusinessCode;
 import lombok.Getter;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpHeaders;
@@ -116,7 +116,7 @@ public class I18nComponent {
         List<String> split = CharSequenceUtil.split(languageCode, "-");
         // 语种格式设置错误
         if (IterUtil.isEmpty(split) || split.size() != 2) {
-            throw new BusinessException(BusinessStatus.I18N_LANGUAGE_FORMAT_ERROR, new Object[]{languageCode});
+            throw new BusinessException(BusinessCode.I18N_LANGUAGE_FORMAT_ERROR.getCode(), new Object[]{languageCode});
         }
         SupportedLanguage instance = SupportedLanguage.getInstance(split.get(0), split.get(1));
         return new Locale(instance.getLanguage(), instance.getCountry());
@@ -184,7 +184,7 @@ public class I18nComponent {
             if (language.equalsIgnoreCase(EN_US.language) && country.equalsIgnoreCase(EN_US.country)) {
                 return EN_US;
             }
-            throw new BusinessException(BusinessStatus.I18N_LANGUAGE_NOT_SUPPORT);
+            throw new BusinessException(BusinessCode.I18N_LANGUAGE_NOT_SUPPORT.getCode());
         }
 
         public static SupportedLanguage getInstance(List<String> languageRange) {
@@ -209,7 +209,7 @@ public class I18nComponent {
             if (language.equalsIgnoreCase(EN_US.language)) {
                 return EN_US;
             }
-            throw new BusinessException(BusinessStatus.I18N_LANGUAGE_NOT_SUPPORT);
+            throw new BusinessException(BusinessCode.I18N_LANGUAGE_NOT_SUPPORT.getCode());
         }
     }
 }

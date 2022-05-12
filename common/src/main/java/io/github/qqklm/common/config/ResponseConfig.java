@@ -1,7 +1,7 @@
 package io.github.qqklm.common.config;
 
 import io.github.qqklm.common.BusinessException;
-import io.github.qqklm.common.BusinessStatus;
+import io.github.qqklm.common.BusinessCode;
 import io.github.qqklm.common.ReturnBean;
 import io.github.qqklm.common.component.JacksonComponent;
 import lombok.extern.slf4j.Slf4j;
@@ -93,7 +93,7 @@ public class ResponseConfig implements ResponseBodyAdvice<Object> {
             log.debug("响应：{}", jacksonComponent.getObjectMapper().writeValueAsString(body));
             return jacksonComponent.getObjectMapper().writeValueAsString(new ReturnBean<>(body));
         } catch (Exception e) {
-            throw new BusinessException(BusinessStatus.JSON_SERIALIZATION_ERROR);
+            throw new BusinessException(BusinessCode.JSON_SERIALIZATION_ERROR);
         }
     }
 

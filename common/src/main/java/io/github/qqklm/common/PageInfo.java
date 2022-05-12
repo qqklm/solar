@@ -42,13 +42,13 @@ public class PageInfo<E> {
 
     public PageInfo<E> genPageInfo(List<E> data, Long total, Long pageSize, Long currentPage) {
         if (total < 0) {
-            throw new BusinessException(BusinessStatus.ILLEGAL_ARGUMENT, new Object[]{"total"});
+            throw new BusinessException(BusinessCode.ILLEGAL_ARGUMENT, new Object[]{"total"});
         }
         if (pageSize < 0) {
-            throw new BusinessException(BusinessStatus.ILLEGAL_ARGUMENT, new Object[]{"pageSize"});
+            throw new BusinessException(BusinessCode.ILLEGAL_ARGUMENT, new Object[]{"pageSize"});
         }
         if (currentPage < 0) {
-            throw new BusinessException(BusinessStatus.ILLEGAL_ARGUMENT, new Object[]{"currentPage"});
+            throw new BusinessException(BusinessCode.ILLEGAL_ARGUMENT, new Object[]{"currentPage"});
         }
         PageInfo<E> pageInfo = new PageInfo<>();
         pageInfo.setData(data);
