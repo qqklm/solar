@@ -2,10 +2,11 @@ package io.github.qqklm.common.config;
 
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.text.CharSequenceUtil;
-import io.github.qqklm.common.BusinessException;
 import io.github.qqklm.common.BusinessCode;
+import io.github.qqklm.common.BusinessException;
 import io.github.qqklm.common.ReturnBean;
 import io.github.qqklm.common.component.I18nComponent;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
  * @author wb
  * @date 2022/3/28 11:34
  */
+@Slf4j
 @RestControllerAdvice
 @ControllerAdvice
 public class ErrorConfig {
@@ -37,15 +39,16 @@ public class ErrorConfig {
     /**
      * 请求类型不匹配异常处理
      *
-     * @param e       参数验证异常
-     * @param request 请求
+     * @param exception 参数验证异常
+     * @param request   请求
      * @return 通用返回值
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ReturnBean<String> httpRequestMethodError(HttpRequestMethodNotSupportedException e, HttpServletRequest request) {
-        ArrayList<String> i18nParameters = ListUtil.toList(String.join("、", e.getSupportedMethods()));
-        i18nParameters.add(0, e.getMethod());
+    public ReturnBean<String> httpRequestMethodError(HttpRequestMethodNotSupportedException exception, HttpServletRequest request) {
+        ArrayList<String> i18nParameters = ListUtil.toList(String.join("、", exception.getSupportedMethods()));
+        i18nParameters.add(0, exception.getMethod());
         String message = i18nComponent.i18n(BusinessCode.HTTP_NOT_SUPPORT.getCode(), i18nParameters.toArray(), i18nComponent.getLocale(request));
+        log.error(message, exception);
         return new ReturnBean<>(BusinessCode.HTTP_NOT_SUPPORT.getCode(), message, message);
     }
 
@@ -64,7 +67,7 @@ public class ErrorConfig {
                 .collect(Collectors.joining("、"));
 
         String message = i18nComponent.i18n(BusinessCode.PARAMETER_VALIDATION_FAILED.getCode(), new Object[]{errorMsg}, i18nComponent.getLocale(request));
-
+        log.error(message, exception);
         return new ReturnBean<>(BusinessCode.PARAMETER_VALIDATION_FAILED.getCode(), message, message);
     }
 
@@ -76,11 +79,11 @@ public class ErrorConfig {
      */
     @ExceptionHandler(ConstraintViolationException.class)
     public ReturnBean<String> constraintValidationExceptionResponse(ConstraintViolationException exception, HttpServletRequest request) {
-        final String errMsg = exception.getConstraintViolations()
+        String message = exception.getConstraintViolations()
                 .stream()
                 .map(each -> CharSequenceUtil.split(each.getPropertyPath().toString(), ".").get(1) + ":" + each.getMessage()).collect(Collectors.joining("、"));
-
-        return new ReturnBean<>(BusinessCode.PARAMETER_VALIDATION_FAILED.getCode(), errMsg, errMsg);
+        log.error(message, exception);
+        return new ReturnBean<>(BusinessCode.PARAMETER_VALIDATION_FAILED.getCode(), message, message);
     }
 
     /**
@@ -91,8 +94,9 @@ public class ErrorConfig {
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ReturnBean<String> httpMessageNotReadableExceptionResponse(HttpMessageNotReadableException exception, HttpServletRequest request) {
-        String errMsg = i18nComponent.i18n(BusinessCode.REQUEST_BODY_MISSING.getCode(), new Object[0], i18nComponent.getLocale(request));
-        return new ReturnBean<>(BusinessCode.REQUEST_BODY_MISSING.getCode(), errMsg, errMsg);
+        String message = i18nComponent.i18n(BusinessCode.REQUEST_BODY_MISSING.getCode(), new Object[0], i18nComponent.getLocale(request));
+        log.error(message, exception);
+        return new ReturnBean<>(BusinessCode.REQUEST_BODY_MISSING.getCode(), message, message);
     }
 
     /**
@@ -103,34 +107,37 @@ public class ErrorConfig {
      */
     @ExceptionHandler(UnexpectedTypeException.class)
     public ReturnBean<String> unexpectedTypeExceptionResponse(UnexpectedTypeException exception, HttpServletRequest request) {
-        String errMsg = i18nComponent.i18n(BusinessCode.VALIDATION_ANNOTATIONS_INCORRECTLY.getCode(), new Object[0], i18nComponent.getLocale(request));
-        return new ReturnBean<>(BusinessCode.VALIDATION_ANNOTATIONS_INCORRECTLY.getCode(), errMsg, errMsg);
+        String message = i18nComponent.i18n(BusinessCode.VALIDATION_ANNOTATIONS_INCORRECTLY.getCode(), new Object[0], i18nComponent.getLocale(request));
+        log.error(message, exception);
+        return new ReturnBean<>(BusinessCode.VALIDATION_ANNOTATIONS_INCORRECTLY.getCode(), message, message);
     }
 
     /**
      * 业务异常
      *
-     * @param e       异常信息
-     * @param request 请求
+     * @param exception 异常信息
+     * @param request   请求
      * @return 通用返回值
      */
     @ExceptionHandler(BusinessException.class)
-    public ReturnBean<String> businessException(BusinessException e, HttpServletRequest request) {
-        String message = i18nComponent.i18n(e.getStatus().getCode(), e.getMessageArgs(), i18nComponent.getLocale(request));
-
-        return new ReturnBean<>(e.getStatus().getCode(), message, message);
+    public ReturnBean<String> businessException(BusinessException exception, HttpServletRequest request) {
+        String message = i18nComponent.i18n(exception.getCode(), exception.getMessageArgs(), i18nComponent.getLocale(request));
+        log.error(message, exception);
+        return new ReturnBean<>(exception.getCode(), message, message);
     }
 
     /**
      * 未知异常
      *
-     * @param e       异常信息
-     * @param request 请求
+     * @param exception 异常信息
+     * @param request   请求
      * @return 通用返回值
      */
     @ExceptionHandler(Exception.class)
-    public ReturnBean<String> httpRequestMethodError(Exception e, HttpServletRequest request) {
-        return new ReturnBean<>(BusinessCode.UNKNOWN_ERROR.getCode(), i18nComponent.i18n(BusinessCode.UNKNOWN_ERROR.getCode(), new Object[]{e.getMessage()}, i18nComponent.getLocale(request)), e.getMessage());
+    public ReturnBean<String> httpRequestMethodError(Exception exception, HttpServletRequest request) {
+        String message = i18nComponent.i18n(BusinessCode.UNKNOWN_ERROR.getCode(), new Object[]{exception.getMessage()}, i18nComponent.getLocale(request));
+        log.error(message, exception);
+        return new ReturnBean<>(BusinessCode.UNKNOWN_ERROR.getCode(), message, message);
     }
 
 }

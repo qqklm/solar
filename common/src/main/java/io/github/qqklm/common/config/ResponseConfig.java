@@ -93,7 +93,7 @@ public class ResponseConfig implements ResponseBodyAdvice<Object> {
             log.debug("响应：{}", jacksonComponent.getObjectMapper().writeValueAsString(body));
             return jacksonComponent.getObjectMapper().writeValueAsString(new ReturnBean<>(body));
         } catch (Exception e) {
-            throw new BusinessException(BusinessCode.JSON_SERIALIZATION_ERROR);
+            throw new BusinessException(BusinessCode.JSON_SERIALIZATION_ERROR.getCode());
         }
     }
 
