@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @author wb
  * @date 2022/3/28 11:32
+ * @ignore
  */
 @RestController
 public class ReDirectedErrorConfig implements ErrorController {

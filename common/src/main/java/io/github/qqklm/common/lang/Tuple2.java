@@ -14,6 +14,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Tuple2<F, S> {
+    /**
+     * 第一个元素
+     */
     private F f;
+    /**
+     * 第二个元素
+     */
     private S s;
 }

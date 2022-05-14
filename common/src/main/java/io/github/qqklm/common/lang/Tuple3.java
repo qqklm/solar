@@ -13,6 +13,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class Tuple3<F, S, T> extends Tuple2<F, S> {
+    /**
+     * 第三个元素
+     */
     private T t;
 
     public Tuple3(F f, S s, T t) {
