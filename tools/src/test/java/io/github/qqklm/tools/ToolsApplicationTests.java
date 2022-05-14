@@ -4,15 +4,13 @@ import cn.org.atool.fluent.mybatis.metadata.DbType;
 import cn.org.atool.generator.FileGenerator;
 import cn.org.atool.generator.annotation.Table;
 import cn.org.atool.generator.annotation.Tables;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+@Slf4j
 @SpringBootTest
 class ToolsApplicationTests {
-
-    @Test
-    void contextLoads() {
-    }
 
     /**
      * 生成dao相关代码
