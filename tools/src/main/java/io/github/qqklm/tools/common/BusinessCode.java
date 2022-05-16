@@ -17,7 +17,12 @@ public enum BusinessCode {
     /**
      * SQL语法错误
      */
-    SQL_SYNTAX_ERROR("20002");
+    SQL_SYNTAX_ERROR("20002"),
+    /**
+     * IP格式不正确
+     */
+    IP_PATTERN_ERROR("20003"),
+    ;
     private final String code;
 
     BusinessCode(String code) {

@@ -312,6 +312,7 @@ public class SqlService {
 
     /**
      * 验证语法，出错时抛出异常
+     *
      * @param sql sql语句
      */
     private void checkAndThrow(String sql) {
