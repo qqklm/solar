@@ -73,7 +73,13 @@ public class IpService {
         IpMessage ipMessage = new IpMessage();
         if (PatternPool.IPV4.matcher(ip).matches()) {
             long l = Ipv4Util.ipv4ToLong(ip);
-            Optional<Ip2locationIp4Entity> ip4EntityOptional = ip4BaseDao.findOne(Ip2locationIp4Query.query().where.ipFrom().le(l).ipTo().ge(l).end());
+            Ip2locationIp4Query query = Ip2locationIp4Query
+                    .query(() -> "`ip2location_ip4` force index (idx_ip_from_to) ")
+                    .where
+                    .ipFrom().le(l)
+                    .ipTo().ge(l)
+                    .end();
+            Optional<Ip2locationIp4Entity> ip4EntityOptional = ip4BaseDao.findOne(query);
             if (ip4EntityOptional.isPresent()) {
                 Ip2locationIp4Entity ip2locationIp4Entity = ip4EntityOptional.get();
                 ipMessage = new IpMessage(
@@ -99,7 +105,13 @@ public class IpService {
             }
             byte[] bytes = ia.getAddress();
             BigDecimal bd = new BigDecimal(new BigInteger(1, bytes));
-            Optional<Ip2locationIp6Entity> ip6EntityOptional = ip6BaseDao.findOne(Ip2locationIp6Query.query().where.ipFrom().le(bd).ipTo().ge(bd).end());
+            final Ip2locationIp6Query query = Ip2locationIp6Query
+                    .query(() -> "`ip2location_ip6` force index (idx_ip_from_to) ")
+                    .where
+                    .ipFrom().le(bd)
+                    .ipTo().ge(bd)
+                    .end();
+            Optional<Ip2locationIp6Entity> ip6EntityOptional = ip6BaseDao.findOne(query);
             if (ip6EntityOptional.isPresent()) {
                 Ip2locationIp6Entity ip2locationIp6Entity = ip6EntityOptional.get();
                 ipMessage = new IpMessage(

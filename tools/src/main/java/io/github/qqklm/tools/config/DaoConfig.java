@@ -1,4 +1,4 @@
-package io.github.qqklm.common.component;
+package io.github.qqklm.tools.config;
 
 import cn.org.atool.fluent.mybatis.spring.MapperFactory;
 import org.apache.ibatis.session.SqlSessionFactory;

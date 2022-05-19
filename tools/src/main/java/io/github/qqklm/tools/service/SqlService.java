@@ -257,16 +257,16 @@ public class SqlService {
      * @param sql sql语句
      * @return key：表名，value：字段名
      */
-    public List<Pair<String, List<String>>> parseSql(String sql) {
+    public List<Tuple2<String, List<Tuple2<String, String>>>> parseSql(String sql) {
         checkAndThrow(sql);
         SQLStatementParser sqlStatementParser = new MySqlStatementParser(sql);
         SQLSelectStatement sqlStatement = (SQLSelectStatement) sqlStatementParser.parseSelect();
         SQLSelect select = sqlStatement.getSelect();
-        Map<String, List<String>> tableFieldMapping = select.getQueryBlock().getSelectList()
+        Map<String, List<Tuple2<String, String>>> tableFieldMapping = select.getQueryBlock().getSelectList()
                 .stream()
                 .collect(Collectors.toMap(
                         each -> ((SQLPropertyExpr) each.getExpr()).getOwnernName(),
-                        each -> ListUtil.toList(((SQLPropertyExpr) each.getExpr()).getName()),
+                        each -> ListUtil.toList(new Tuple2<>(((SQLPropertyExpr) each.getExpr()).getName(), each.getAlias())),
                         (o1, o2) -> {
                             o1.addAll(o2);
                             return o1;
@@ -275,9 +275,9 @@ public class SqlService {
         SQLTableSource from = select.getQueryBlock().getFrom();
         Map<String, String> tableNameMapping = new HashMap<>(6);
         getTableNameMapping(from, tableNameMapping);
-        List<Pair<String, List<String>>> selectInfo = new ArrayList<>(tableFieldMapping.size());
+        List<Tuple2<String, List<Tuple2<String, String>>>> selectInfo = new ArrayList<>(tableFieldMapping.size());
         tableFieldMapping.forEach((tableName, fieldName) -> {
-            selectInfo.add(Pair.of(CharSequenceUtil.blankToDefault(tableNameMapping.get(tableName), tableName), fieldName));
+            selectInfo.add(new Tuple2<>(CharSequenceUtil.blankToDefault(tableNameMapping.get(tableName), tableName), fieldName));
         });
 
         return selectInfo;

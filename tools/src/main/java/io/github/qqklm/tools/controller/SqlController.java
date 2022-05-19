@@ -1,6 +1,7 @@
 package io.github.qqklm.tools.controller;
 
 import cn.hutool.core.lang.Pair;
+import io.github.qqklm.common.lang.Tuple2;
 import io.github.qqklm.tools.dto.*;
 import io.github.qqklm.tools.service.SqlService;
 import org.springframework.validation.annotation.Validated;
@@ -122,7 +123,7 @@ public class SqlController {
      * @return key：表名，value：字段名
      */
     @GetMapping("/parse")
-    public List<Pair<String, List<String>>> parse(@NotBlank String sql) {
+    public List<Tuple2<String, List<Tuple2<String, String>>>> parse(@NotBlank String sql) {
         return this.sqlService.parseSql(sql);
     }
 }
