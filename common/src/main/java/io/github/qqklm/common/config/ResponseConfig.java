@@ -84,14 +84,14 @@ public class ResponseConfig implements ResponseBodyAdvice<Object> {
         try {
             if (Objects.isNull(body)) {
                 log.debug("响应：{}", jacksonComponent.getObjectMapper().writeValueAsString(null));
-                return jacksonComponent.getObjectMapper().writeValueAsString(new ReturnBean<Void>());
+                return new ReturnBean<Void>();
             }
             if (body instanceof ReturnBean) {
                 log.debug("响应：{}", jacksonComponent.getObjectMapper().writeValueAsString(((ReturnBean<?>) body).getData()));
-                return jacksonComponent.getObjectMapper().writeValueAsString(body);
+                return body;
             }
             log.debug("响应：{}", jacksonComponent.getObjectMapper().writeValueAsString(body));
-            return jacksonComponent.getObjectMapper().writeValueAsString(new ReturnBean<>(body));
+            return new ReturnBean<>(body);
         } catch (Exception e) {
             throw new BusinessException(BusinessCode.JSON_SERIALIZATION_ERROR.getCode());
         }
