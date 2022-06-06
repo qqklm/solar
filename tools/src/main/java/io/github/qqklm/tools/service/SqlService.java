@@ -2,7 +2,6 @@ package io.github.qqklm.tools.service;
 
 import cn.hutool.core.collection.IterUtil;
 import cn.hutool.core.collection.ListUtil;
-import cn.hutool.core.lang.Pair;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.db.sql.SqlUtil;
@@ -31,6 +30,106 @@ import java.util.stream.Collectors;
  */
 @Service
 public class SqlService {
+    /**
+     * 表名和别名的映射
+     *
+     * @param from             关联关系
+     * @param tableNameMapping 最终映射关系，key：别名，value：表名
+     */
+    private static void getTableNameMapping(SQLTableSource from, Map<String, String> tableNameMapping) {
+        if (from instanceof SQLJoinTableSource) {
+            SQLTableSource left = ((SQLJoinTableSource) from).getLeft();
+            simpleTableNameMapping(tableNameMapping, left);
+
+            SQLTableSource right = ((SQLJoinTableSource) from).getRight();
+            simpleTableNameMapping(tableNameMapping, right);
+        } else if (from instanceof SQLSubqueryTableSource) {
+            getTableNameMapping(((SQLSubqueryTableSource) from).getSelect().getQueryBlock().getFrom(), tableNameMapping);
+        } else {
+            tableNameMapping.put(CharSequenceUtil.isBlank(from.getAlias()) ? ((SQLExprTableSource) from).getExpr().toString() : from.getAlias(), ((SQLExprTableSource) from).getExpr().toString());
+        }
+    }
+
+    private static void simpleTableNameMapping(Map<String, String> tableNameMapping, SQLTableSource right) {
+        if (right instanceof SQLSubqueryTableSource) {
+            getTableNameMapping(((SQLSubqueryTableSource) right).getSelect().getQueryBlock().getFrom(), tableNameMapping);
+        } else if (right instanceof SQLJoinTableSource) {
+            getTableNameMapping(right, tableNameMapping);
+        } else {
+            tableNameMapping.put(CharSequenceUtil.isBlank(right.getAlias()) ? ((SQLExprTableSource) right).getExpr().toString() : right.getAlias(), ((SQLExprTableSource) right).getExpr().toString());
+        }
+    }
+
+    /**
+     * 解析sql，获取sql中表和对应字段
+     *
+     * @param sql sql语句
+     * @return key：表名，value：字段名
+     */
+    public static List<Tuple2<String, List<Tuple2<String, String>>>> parseSql(String sql) {
+        checkAndThrow(sql);
+        SQLStatementParser sqlStatementParser = new MySqlStatementParser(sql);
+        SQLSelectStatement sqlStatement = (SQLSelectStatement) sqlStatementParser.parseSelect();
+        SQLSelect select = sqlStatement.getSelect();
+        Map<String, List<Tuple2<String, String>>> tableFieldMapping = select.getQueryBlock().getSelectList()
+                .stream()
+                .collect(Collectors.toMap(
+                        each -> {
+                            if (each.getExpr() instanceof SQLAllColumnExpr) {
+                                return "";
+                            }
+                            return ((SQLPropertyExpr) each.getExpr()).getOwnernName();
+                        },
+                        each -> {
+                            if (each.getExpr() instanceof SQLAllColumnExpr) {
+                                return new ArrayList<>();
+                            }
+                            return ListUtil.toList(new Tuple2<>(((SQLPropertyExpr) each.getExpr()).getName(), each.getAlias()));
+                        },
+                        (o1, o2) -> {
+                            o1.addAll(o2);
+                            return o1;
+                        }
+                ));
+        tableFieldMapping.remove("");
+        SQLTableSource from = select.getQueryBlock().getFrom();
+        Map<String, String> tableNameMapping = new HashMap<>(6);
+        getTableNameMapping(from, tableNameMapping);
+        List<Tuple2<String, List<Tuple2<String, String>>>> selectInfo = new ArrayList<>(tableFieldMapping.size());
+        tableFieldMapping.forEach((tableName, fieldName) -> {
+            selectInfo.add(new Tuple2<>(CharSequenceUtil.blankToDefault(tableNameMapping.get(tableName), tableName), fieldName));
+        });
+
+        return selectInfo;
+    }
+
+    /**
+     * 检测语法是否合法
+     *
+     * @param sql sql语句
+     * @return true：合法，false：不合法
+     */
+    public static boolean check(String sql) {
+        try {
+            SQLStatementParser sqlStatementParser = new SQLStatementParser(sql);
+            sqlStatementParser.parseStatementList();
+            return true;
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
+    /**
+     * 验证语法，出错时抛出异常
+     *
+     * @param sql sql语句
+     */
+    private static void checkAndThrow(String sql) {
+        if (!check(sql)) {
+            throw new BusinessException(BusinessCode.SQL_SYNTAX_ERROR.getCode());
+        }
+    }
+
     /**
      * 为查询语句添加查询列
      *
@@ -230,76 +329,6 @@ public class SqlService {
     }
 
     /**
-     * 表名和别名的映射
-     *
-     * @param from             关联关系
-     * @param tableNameMapping 最终映射关系，key：别名，value：表名
-     */
-    private void getTableNameMapping(SQLTableSource from, Map<String, String> tableNameMapping) {
-        if (from instanceof SQLJoinTableSource) {
-            SQLTableSource left = ((SQLJoinTableSource) from).getLeft();
-            SQLExprTableSource right = (SQLExprTableSource) ((SQLJoinTableSource) from).getRight();
-            tableNameMapping.put(right.getAlias(), right.getExpr().toString());
-            if (left instanceof SQLJoinTableSource) {
-                getTableNameMapping(left, tableNameMapping);
-            } else {
-                tableNameMapping.put(left.getAlias(), ((SQLExprTableSource) left).getExpr().toString());
-            }
-
-        } else {
-            tableNameMapping.put(from.getAlias(), ((SQLExprTableSource) from).getExpr().toString());
-        }
-    }
-
-    /**
-     * 解析sql，获取sql中表和对应字段
-     *
-     * @param sql sql语句
-     * @return key：表名，value：字段名
-     */
-    public List<Tuple2<String, List<Tuple2<String, String>>>> parseSql(String sql) {
-        checkAndThrow(sql);
-        SQLStatementParser sqlStatementParser = new MySqlStatementParser(sql);
-        SQLSelectStatement sqlStatement = (SQLSelectStatement) sqlStatementParser.parseSelect();
-        SQLSelect select = sqlStatement.getSelect();
-        Map<String, List<Tuple2<String, String>>> tableFieldMapping = select.getQueryBlock().getSelectList()
-                .stream()
-                .collect(Collectors.toMap(
-                        each -> ((SQLPropertyExpr) each.getExpr()).getOwnernName(),
-                        each -> ListUtil.toList(new Tuple2<>(((SQLPropertyExpr) each.getExpr()).getName(), each.getAlias())),
-                        (o1, o2) -> {
-                            o1.addAll(o2);
-                            return o1;
-                        }
-                ));
-        SQLTableSource from = select.getQueryBlock().getFrom();
-        Map<String, String> tableNameMapping = new HashMap<>(6);
-        getTableNameMapping(from, tableNameMapping);
-        List<Tuple2<String, List<Tuple2<String, String>>>> selectInfo = new ArrayList<>(tableFieldMapping.size());
-        tableFieldMapping.forEach((tableName, fieldName) -> {
-            selectInfo.add(new Tuple2<>(CharSequenceUtil.blankToDefault(tableNameMapping.get(tableName), tableName), fieldName));
-        });
-
-        return selectInfo;
-    }
-
-    /**
-     * 检测语法是否合法
-     *
-     * @param sql sql语句
-     * @return true：合法，false：不合法
-     */
-    public boolean check(String sql) {
-        try {
-            SQLStatementParser sqlStatementParser = new SQLStatementParser(sql);
-            sqlStatementParser.parseStatementList();
-            return true;
-        } catch (Exception exception) {
-            return false;
-        }
-    }
-
-    /**
      * 格式化sql
      *
      * @param sql sql语句
@@ -308,16 +337,5 @@ public class SqlService {
     public String format(String sql) {
         checkAndThrow(sql);
         return SqlUtil.formatSql(sql);
-    }
-
-    /**
-     * 验证语法，出错时抛出异常
-     *
-     * @param sql sql语句
-     */
-    private void checkAndThrow(String sql) {
-        if (!check(sql)) {
-            throw new BusinessException(BusinessCode.SQL_SYNTAX_ERROR.getCode());
-        }
     }
 }
