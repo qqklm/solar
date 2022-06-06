@@ -1,0 +1,15 @@
+{
+  "serverUrl": "http://localhost:8080",
+  "allInOne": true,
+  "outPath": "./src/main/resources/static/doc",
+  "createDebugPage": true,
+  "allInOneDocFileName":"api.html",
+  "projectName": "faker",
+  "requestHeaders": [{
+    "name": "Accept-Language",
+    "type": "string",
+    "desc": "请求头中的语种",
+    "value":"en-US,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+    "required": true
+  }]
+}
